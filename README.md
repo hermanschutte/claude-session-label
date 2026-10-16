@@ -43,6 +43,6 @@ Type `/label` at any point in a session. In a new session with no prompts yet it
 
 A skill cannot run built-in commands such as `/rename` and `/color`, so this is a mod: a plugin with a hooks module (`hooks/register.ts`).
 
-It reads your prompts from the whole session with `$.session.messages()`, without tool calls and their output, and cuts each prompt to 300 characters. When they come to more than 24,000 characters, it keeps an even sample from the first prompt to the last. It sends that to Haiku, so one `/label` costs at most about 6k input tokens, however long the session is. Then it runs `/rename` and `/color`.
+It reads the session with `$.session.messages()`, without tool calls and their output. When the session was compacted, it keeps the latest compaction summary (up to 16,000 characters), which describes the earlier part of the session. It cuts each of your prompts to 300 characters, and when they come to more than 8,000 characters, it keeps an even sample from the first prompt to the last. It sends that to Haiku, so one `/label` costs at most about 6k input tokens, however long the session is. Then it runs `/rename` and `/color`.
 
 Mods are an early-access Claude Code feature, and the API can change between releases. Tested on Claude Code 2.1.301.

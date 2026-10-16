@@ -1,6 +1,6 @@
 {
   "name": "session-label",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "/label names and colors the session from its work, through /rename and /color.",
   "author": { "name": "Herman Schutte" }
 }

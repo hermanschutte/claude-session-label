@@ -43,7 +43,8 @@ test('/label sends the prompts to haiku, then renames and colors', async ($, on)
   expect(out.text).toBe('Label: fix-login-redirect (red)')
   expect(ran).toEqual(['rename fix-login-redirect', 'color red'])
   expect(sent[0]?.model).toBe('haiku')
-  expect(sent[0]?.prompt.endsWith('\n\nFix the login redirect loop')).toBe(true)
+  expect(sent[0]?.prompt.endsWith('\n\nPrompts:\nFix the login redirect loop')).toBe(true)
+  expect(sent[0]?.prompt).not.toContain('Summary of the earlier part')
 })
 
 test('/label samples a long session from start to end under the cap', async ($, on) => {
@@ -57,11 +58,28 @@ test('/label samples a long session from start to end under the cap', async ($, 
 
   await $.command.run(label)
 
-  const sample = sent.split('\n\n').pop() ?? ''
-  expect(sample.length).toBeLessThanOrEqual(24000)
+  const sample = sent.split('Prompts:\n').pop() ?? ''
+  expect(sample.length).toBeLessThanOrEqual(8000)
   expect(sample.startsWith('prompt 0 ')).toBe(true)
-  expect(sample).toContain('prompt 396 ')
+  expect(sample).toContain('prompt 384 ')
   expect(sample.split('\n').every(p => p.length === 300)).toBe(true)
+})
+
+test('/label keeps the latest compaction summary whole, before the prompts', async ($, on) => {
+  const opening = 'This session is being continued from a previous conversation that ran out of context.'
+  const old = `${opening} ${'a'.repeat(400)} OLD TOPIC`
+  const latest = `${opening} ${'b'.repeat(5000)} ICP OUTREACH`
+  let sent = ''
+  on('session.messages', () => ({ value: [user(old), user(latest), user('go'), user('sent')] }))
+  on('model.complete', (_$, e) => {
+    sent = e.prompt
+    return { value: { isAnswered: false as const, reason: 'empty-reply' as const, usage } }
+  })
+
+  await $.command.run(label)
+
+  expect(sent).toContain(`Summary of the earlier part:\n${latest}\n\nPrompts:\ngo\nsent`)
+  expect(sent).not.toContain('OLD TOPIC')
 })
 
 test('/label changes nothing on a bad reply', async ($, on) => {
