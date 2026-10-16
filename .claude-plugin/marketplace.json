@@ -1,0 +1,6 @@
+{
+  "name": "claude-session-label",
+  "owner": { "name": "Herman Schutte" },
+  "description": "/label: name and color a Claude Code session in one step.",
+  "plugins": [{ "name": "session-label", "source": "./" }]
+}
