@@ -24,7 +24,7 @@ In the desktop app, where `/plugin` does not run: click + next to the prompt box
 
 ## Use
 
-Type `/label` once the session has done some work. In a new session with no conversation yet it prints `No label: nothing-to-fork`.
+Type `/label` at any point in a session. In a new session with no prompts yet it prints `No label: no prompts yet`.
 
 ## Colors
 
@@ -41,6 +41,8 @@ Type `/label` once the session has done some work. In a new session with no conv
 
 ## How it works
 
-A skill cannot run built-in commands such as `/rename` and `/color`, so this is a mod: a plugin with a hooks module (`hooks/register.ts`). It asks the session's own model one question over the conversation with `$.model.fork`, which reuses the session's prompt cache, then runs `/rename` and `/color`.
+A skill cannot run built-in commands such as `/rename` and `/color`, so this is a mod: a plugin with a hooks module (`hooks/register.ts`).
+
+It reads your prompts from the whole session with `$.session.messages()`, without tool calls and their output, and cuts each prompt to 300 characters. When they come to more than 24,000 characters, it keeps an even sample from the first prompt to the last. It sends that to Haiku, so one `/label` costs at most about 6k input tokens, however long the session is. Then it runs `/rename` and `/color`.
 
 Mods are an early-access Claude Code feature, and the API can change between releases. Tested on Claude Code 2.1.301.
